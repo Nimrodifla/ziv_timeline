@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeline</title>
+</head>
+<body><center>
+    <div id="nav">
+        <h1>ציר הזמן של זיו</h1>
+    </div>
+
+    <div id="timeline">
+
+        
+    <!--OBJECTS:>
+    
+        <div class="dateTag">
+            01/01/23 - Tuesday
+        </div>
+
+        <div class="event">
+            <div class="eventHead">גיא לודר נולד</div>
+        </div>
+
+        <div class="dateTag">
+            24/02/23 - Monday
+        </div>
+
+        <div class="event">
+            <div class="eventHead">עדו התגייס!</div>
+        </div-->
+    </div>
+
+    <button id="addEvtBtn" onclick="addEvtBtn()">הוסף מאורע +</button>
+
+</center>
+</body>
+<style>
+    /*
+    IMPORTS:
+    */
+    @import url('https://fonts.googleapis.com/css2?family=Heebo&family=Open+Sans&display=swap');
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        direction: rtl;
+        margin: 0;
+        margin-top: 100px;
+        margin-bottom: 100px;
+        background: rgb(136,90,236);
+        background: linear-gradient(90deg, rgba(136,90,236,1) 49.74%, rgba(255,255,255,1) 49.75%, rgba(255,255,255,1) 50.25%, rgba(136,90,236,1) 50.26%);
+
+        font-family: 'Heebo', sans-serif;
+        font-family: 'Open Sans', sans-serif;
+
+    }
+
+    #nav {
+        background-color: blueviolet;
+        width: 100%;
+        height: fit-content;
+        margin: 0;
+        position: fixed;
+        top: 0;
+
+        font-family: 'Heebo', sans-serif;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .event {
+        background-color: white;
+        border-style: none;
+        border-radius: 40px;
+        width: fit-content;
+        padding: 20px;
+        margin-bottom: 10px;
+
+        font-family: 'Heebo', sans-serif;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .dateTag {
+        background-color: white;
+        border-style: none;
+        border-radius: 40px;
+        width: fit-content;
+        padding: 5px 10px;
+        font-size: small;
+        font-style: italic;
+        margin-bottom: 10px;
+        margin-top: 100px;
+
+        font-family: 'Heebo', sans-serif;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .eventHead {
+        font-weight: bold;
+
+        font-family: 'Heebo', sans-serif;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .space {
+        height: 100px;
+    }
+
+    #addEvtBtn {
+        background-color: rgb(191, 176, 255);
+        border-style: none;
+        border-radius: 40px;
+        width: fit-content;
+        padding: 20px;
+        margin-bottom: 10px;
+        font-weight: bolder;
+
+        position: fixed;
+        bottom: 10px;
+        right: 20px;
+
+        filter: drop-shadow(0px 0px 45px #000000);
+
+        font-family: 'Heebo', sans-serif;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+</style>
+<script>
+
+// Consts
+const timeline_cont = document.getElementById('timeline');
+const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+let sorted_events = undefined;
+
+let data = undefined;
+/*
+## syntax:
+let data = {'events':
+                        [
+                            {'date': '01/01/2023', 'value': 'גיא לודר נרצח?', "desc": "..."},
+                            ...
+                        ]
+            };
+*/
+
+// Fetch data
+function updateData() {
+    // add loading tag
+    timeline_cont.innerHTML += '<div class="event" id="loadingTag"><div class="eventHead">טוען...</div></div>';
+
+    fetch('/data')
+        .then(res => res.text())
+        .then(res => {
+            data = JSON.parse(res);
+            renderData();
+        });
+}
+updateData();
+
+
+// ## Render Data
+function renderData() {
+    // delete loadingTag
+    document.getElementById('loadingTag').remove();
+    // reset timeline container
+    timeline_cont.innerHTML = "";
+
+    // sort by date - NOT WORKING WELL
+    sorted_events = data.events;
+    for (let i = 0; i < sorted_events.length; i++) {
+        for (let j = i+1; j < sorted_events.length; j++) {
+            curr = new Date(smartDateToDumb(sorted_events[j].date)).getTime();
+            prev = new Date(smartDateToDumb(sorted_events[j - 1].date)).getTime();
+            if (prev > curr) {
+                // switch
+                let temp = sorted_events[j];
+                sorted_events[j] = sorted_events[j - 1];
+                sorted_events[j - 1] = temp;
+            }
+        }
+    }
+
+    // render events & date tags - done
+    for (let i = 0; i < sorted_events.length; i++) {
+        let curr = sorted_events[i];
+        // not the first event
+        if (i > 0) {
+            // check if prev event is the same date
+            let same_date_as_prev = false;
+            if (sorted_events[i-1].date == curr.date) {
+                same_date_as_prev = true;
+            }
+
+            if (!same_date_as_prev) {
+                // date tag
+                timeline_cont.innerHTML += renderDateTag(curr.date);
+            }
+
+            // event
+            timeline_cont.innerHTML += renderEvent(i);
+        }
+        //the first event
+        else {
+            // date tag
+            timeline_cont.innerHTML += renderDateTag(curr.date);
+            // event
+            timeline_cont.innerHTML += renderEvent(i);
+        }
+    }
+}
+
+function renderEvent(evtIndex) {
+    return ("<div onclick=\"openDesc(" + evtIndex + ")\" class=\"event\"><div class=\"eventHead\">" + sorted_events[evtIndex].value + "</div></div>");
+}
+
+function renderDateTag(date) {
+    // find Day Of the Week
+    let d = new Date(smartDateToDumb(date.toString()));
+    let DOW = weekday[d.getDay()];
+    return ("<div class=\"dateTag\">" + date + " - " + DOW + "</div>");
+}
+
+// date to american date
+function smartDateToDumb(smartDate) {
+    return (smartDate.toString().substr(3, 3) + smartDate.toString().substr(0, 3) + smartDate.toString().substr(6));
+}
+
+// open description of an event
+function openDesc(evtIndex) {
+    alert(sorted_events[evtIndex].desc);
+}
+
+function addEvtBtn() {
+    let name = prompt("שם האירוע");
+    let desc = prompt("תיאור האירוע");
+    let date = prompt("תאריך האירוע", "dd/mm/yyyy");
+    
+    fetch('/addEvt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+  	        'name': name,
+            'desc': desc,
+            'date': date
+        })
+    })
+    .then(res => res.json())
+    .then(res => {
+        console.log(res);
+        if (!res.added) {
+            alert('הייתה בעיה... המאורע לא התווסף');
+        }
+        else {
+            updateData();
+        }
+    });
+    
+}
+
+</script>
+</html>
