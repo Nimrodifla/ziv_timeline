@@ -171,12 +171,14 @@ function renderData() {
 
     // sort by date - NOT WORKING WELL
     sorted_events = data.events;
+    
     for (let i = 0; i < sorted_events.length; i++) {
-        for (let j = i+1; j < sorted_events.length; j++) {
-            curr = new Date(smartDateToDumb(sorted_events[j].date)).getTime();
-            prev = new Date(smartDateToDumb(sorted_events[j - 1].date)).getTime();
+        for (let j = 1; j < sorted_events.length - i; j++) {
+            let curr = new Date(smartDateToDumb(sorted_events[j].date)).getTime();
+            let prev = new Date(smartDateToDumb(sorted_events[j - 1].date)).getTime();
+        
             if (prev > curr) {
-                // switch
+                // swap
                 let temp = sorted_events[j];
                 sorted_events[j] = sorted_events[j - 1];
                 sorted_events[j - 1] = temp;
