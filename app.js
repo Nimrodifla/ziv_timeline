@@ -9,13 +9,14 @@ app.get('/', (req, res)=>{
     res.sendFile(__dirname + '/timeline.html');
 });
 
+// TO DO:
+// fetch data from firebase db, not a static one.
 app.get('/data', (req, res)=>{
     res.sendFile(__dirname + '/data.json');
-
-    // TO DO:
-    // fetch data from firebase db, not a static one.
 });
 
+// TO DO:
+// add data to firebase db, not using a static one.
 app.post('/addEvt', (req, res)=>{
     console.log(req.body);
     let name = req.body.name;
