@@ -23,8 +23,8 @@ app.post('/addEvt', (req, res)=>{
     let desc = req.body.desc;
     let date = req.body.date;
 
+    // ## make sure data's format is valid
     let valid = true;
-    // make sure data's format is valid
     if (name.length <= 0 || desc.length <= 0 || Date(date) == undefined) {
         valid = false;
     }
