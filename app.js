@@ -11,6 +11,9 @@ app.get('/', (req, res)=>{
 
 app.get('/data', (req, res)=>{
     res.sendFile(__dirname + '/data.json');
+
+    // TO DO:
+    // fetch data from firebase db, not a static one.
 });
 
 app.post('/addEvt', (req, res)=>{
